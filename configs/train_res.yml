@@ -1,0 +1,208 @@
+model:
+  vn: vn
+  hidden_channels: 256
+  hidden_channels_vec: 64
+  encoder:
+    name: cftfm
+    hidden_channels: 256
+    hidden_channels_vec: 64
+    edge_channels: 64
+    key_channels: 128
+    num_heads: 4
+    num_interactions: 6
+    cutoff: 10.0
+    knn: 48 # kNN Graph
+  cross_encoder:
+    num_heads: 4
+    d_model: 256
+    num_layers: 4
+    dropout: 0.0
+  decoder:
+    tgt_len: 200
+    hidden_channels: 256
+    key_channels: 128
+    num_heads: 4
+    num_interactions: 6
+    padding: "right"
+    smiVoc: [
+      "#",
+      "$",
+      "&",
+      "(",
+      ")",
+      "-",
+      "/",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "=",
+      "B",
+      "Br",
+      "C",
+      "Cl",
+      "F",
+      "I",
+      "N",
+      "O",
+      "P",
+      "S",
+      "[125I]",
+      "[18F]",
+      "[2H]",
+      "[3H]",
+      "[AlH2]",
+      "[As]",
+      "[Au]",
+      "[B-]",
+      "[C-]",
+      "[C@@H]",
+      "[C@@]",
+      "[C@H]",
+      "[C@]",
+      "[CH-]",
+      "[Cr]",
+      "[Fe--]",
+      "[Fe@@]",
+      "[Fe@]",
+      "[Fe]",
+      "[Hg]",
+      "[K]",
+      "[Li]",
+      "[Mg]",
+      "[Mo]",
+      "[N+]",
+      "[N-]",
+      "[N@+]",
+      "[N@@+]",
+      "[N@@]",
+      "[N@H+]",
+      "[N@]",
+      "[NH+]",
+      "[NH-]",
+      "[NH2+]",
+      "[NH3+]",
+      "[N]",
+      "[Na]",
+      "[O+]",
+      "[O-]",
+      "[OH+]",
+      "[O]",
+      "[P+]",
+      "[P@@]",
+      "[P@]",
+      "[PH]",
+      "[P]",
+      "[Pd]",
+      "[Re]",
+      "[Ru@@]",
+      "[Ru]",
+      "[S+]",
+      "[S-]",
+      "[S@+]",
+      "[S@@+]",
+      "[S@@H]",
+      "[S@@]",
+      "[S@H]",
+      "[S@]",
+      "[SH]",
+      "[Sc]",
+      "[S]",
+      "[Sb]",
+      "[SeH]",
+      "[Se]",
+      "[Si]",
+      "[SnH]",
+      "[Sn]",
+      "[V]",
+      "[Zn++]",
+      "[c-]",
+      "[n+]",
+      "[n-]",
+      "[nH+]",
+      "[nH]",
+      "[o+]",
+      "[s+]",
+      "[se]",
+      "[W]",
+      "\\",
+      "^",
+      "c",
+      "n",
+      "o",
+      "p",
+      "s"
+    ]
+  field:
+    name: classifier
+    num_filters: 128
+    num_filters_vec: 32
+    edge_channels: 64
+    num_heads: 4
+    cutoff: 10.0
+    knn: 32 # kNN Graph
+  position:
+    num_filters: 128
+    n_component: 3
+
+train:
+  resume_train: False
+  checkpoint_path: /home/haotian/Molecule_Generation/Res2Mol/logs/train_res_2022_10_05__10_03_53/checkpoints
+  ckpt_name: train_186.pt
+  start_epoch: 186
+  save: True
+  seed: 2021
+  num_props: 3
+  prop:
+    - vina_score
+    - qed
+    - sas
+  use_apex: False
+  num_workers: 8
+  pin_memory: True
+  max_iters: 500000
+  val_freq: 2000
+  pos_noise_std: 0.1
+  max_grad_norm: .inf
+  optimizer:
+    type: adam
+    lr: 2.e-4
+    weight_decay: 0
+    beta1: 0.99
+    beta2: 0.999
+  scheduler:
+    type: plateau
+    factor: 0.6
+    patience: 8
+    min_lr: 1.e-5
+  transform:
+    mask:
+      type: mixed
+      min_ratio: 0.0
+      max_ratio: 1.1
+      min_num_masked: 1
+      min_num_unmasked: 0 
+      p_random: 0.15
+      p_bfs: 0.6
+      p_invbfs: 0.25
+    contrastive:
+      num_real: 20
+      num_fake: 20
+      pos_real_std: 0.05
+      pos_fake_std: 2.0
+    edgesampler:
+      k: 8
+generate:
+  prop:
+    - 1
+    - 1
+    - 1
+dataset:
+  name: pl
+  path: /workspace/kangchenglong/drug_design_protein/data/crossdocked_pocket10
+  split: /workspace/kangchenglong/drug_design_protein/data/split_by_name1000.pt
